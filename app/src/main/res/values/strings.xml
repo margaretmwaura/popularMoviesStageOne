@@ -1,0 +1,5 @@
+<resources>
+    <string name="app_name">TheMovieApp</string>
+    <!--This key is important for the building of the url-->
+    <string name="API_KEY">97b1a968c24fb201f385303f2d1b72bc</string>
+</resources>
