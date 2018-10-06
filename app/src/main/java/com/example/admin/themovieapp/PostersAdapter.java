@@ -8,7 +8,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.ImageView;
-import android.widget.Toast;
 
 import com.squareup.picasso.Picasso;
 
@@ -22,6 +21,7 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
     private Context mContext;
     public static final String IMAGE_URL_BASE_PATH = " http://image.tmdb.org/t/p/w342";
     private OnItemClickListener cLickListener;
+
 
 
     public PostersAdapter(Context context)
@@ -83,6 +83,8 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
             }
         });
         builder.build().load(toLoad).fit().into(holder.posterImageView);
+
+
     }
 
     @Override
@@ -97,6 +99,7 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
         // The adapter needs to know that the data has changed. If we don't call this, app will crash.
         notifyDataSetChanged();
     }
+
 
     class PosterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
     {
@@ -115,4 +118,5 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
             cLickListener.onClick(v, getAdapterPosition());
         }
     }
+
 }

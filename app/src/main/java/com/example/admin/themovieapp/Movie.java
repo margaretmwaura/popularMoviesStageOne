@@ -1,5 +1,7 @@
 package com.example.admin.themovieapp;
 
+import android.arch.persistence.room.Entity;
+import android.arch.persistence.room.PrimaryKey;
 import android.os.Parcel;
 import android.os.Parcelable;
 import android.support.annotation.NonNull;
@@ -8,6 +10,7 @@ import com.google.gson.annotations.SerializedName;
 
 
 //This data is for one movie
+@Entity(tableName = "Movies")
 public class Movie implements Parcelable,Comparable<Movie>
 {
 
@@ -22,6 +25,7 @@ public class Movie implements Parcelable,Comparable<Movie>
     private String releaseDate;
 
 
+    @PrimaryKey
     @SerializedName("id")
     private Integer id;
 
@@ -130,6 +134,7 @@ public class Movie implements Parcelable,Comparable<Movie>
         dest.writeString(releaseDate);
         dest.writeInt(id);
         dest.writeString(originalTitle);
+
         dest.writeString(title);
         dest.writeDouble(voteAverage);
     }

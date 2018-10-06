@@ -1,6 +1,15 @@
 package com.example.admin.themovieapp;
 
+import android.arch.lifecycle.LiveData;
+import android.arch.lifecycle.Observer;
+import android.arch.lifecycle.ViewModelProviders;
 import android.content.Intent;
+import android.os.Parcelable;
+import android.support.annotation.NonNull;
+import android.support.annotation.Nullable;
+import android.support.v4.app.LoaderManager;
+import android.support.v4.content.AsyncTaskLoader;
+import android.support.v4.content.Loader;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.GridLayoutManager;
@@ -26,23 +35,30 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
 
-public class MainActivity extends AppCompatActivity implements OnItemClickListener{
+public class MainActivity extends AppCompatActivity implements OnItemClickListener
+{
 
 
 //    This list is the result gotten from the search
     private  List<Movie> movies = new ArrayList<>();
 
 //End of the comment
+    private GridLayoutManager gridLayoutManager;
     private PostersAdapter postersAdapter;
     private RecyclerView  recyclerView;
     private static final String TAG = "Error";
     private static Retrofit retrofit = null;
     public static final String BASE_URL = "http://api.themoviedb.org/3/";
+   private Bundle mListState;
+   private MovieDatabase mDb;
+
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+
+        mDb = MovieDatabase.getInstance(getApplicationContext());
 
 //        The reference to the recyclerView
         recyclerView = (RecyclerView) findViewById(R.id.recyclerView);
@@ -51,13 +67,15 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
         gettingThePopularMovies();
 
 //        Wiring up the recyclerView
-        recyclerView.setLayoutManager(new GridLayoutManager(this,2));
+        gridLayoutManager = new GridLayoutManager(this,2);
+        recyclerView.setLayoutManager(gridLayoutManager);
         postersAdapter = new PostersAdapter(this);
         recyclerView.setAdapter(postersAdapter);
           postersAdapter.setClickListener( this);
 
     }
 
+//    This needs to be wrapped in a background thread
     public void gettingThePopularMovies()
     {
         if(retrofit == null)
@@ -71,6 +89,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
 
         theInterface toUse = retrofit.create(theInterface.class);
         Call<AllMovie> call = toUse.getTopRatedMovies(BuildConfig.THE_API_KEY);
+//        Running in the background
         call.enqueue(new Callback<AllMovie>() {
             @Override
             public void onResponse(Call<AllMovie> call, Response<AllMovie> response)
@@ -79,6 +98,7 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
                 movies = response.body().getResults();
                 postersAdapter.setMovieList(movies);
                 Log.d("Sucess","This was a success");
+
             }
 
             @Override
@@ -126,10 +146,36 @@ public class MainActivity extends AppCompatActivity implements OnItemClickListen
              Collections.sort(movies);
             postersAdapter.setMovieList(movies);
         }
+        if(id == R.id.favorite_movies)
+        {
+
+          getDbData();
+
+        }
 
 
         return super.onOptionsItemSelected(item);
     }
+
+    public void getDbData()
+    {
+
+//      It works outside of the main thread so need for the background thread
+        ViewModel viewModel = ViewModelProviders.of(this).get(ViewModel.class);
+        viewModel.getMovies().observe(this, new Observer<List<Movie>>()
+        {
+            // This method has the priveledge of accessing the ui
+            @Override
+            public void onChanged(@Nullable List<Movie> movies)
+            {
+                postersAdapter.setMovieList( movies);
+                Log.d("The movie size","The size is " + movies.size());
+            }
+        });
+    }
+
+
+
 }
 
 
