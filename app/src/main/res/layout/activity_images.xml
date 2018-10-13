@@ -4,5 +4,6 @@
     android:adjustViewBounds="true"
     android:id="@+id/posters"
     android:paddingBottom="5dp"
+    android:longClickable="true"
     xmlns:android="http://schemas.android.com/apk/res/android" />
 

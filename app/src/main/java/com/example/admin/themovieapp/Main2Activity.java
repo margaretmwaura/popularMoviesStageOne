@@ -27,6 +27,8 @@ import retrofit2.Response;
 import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 
+import static com.example.admin.themovieapp.TheFavourites.returnFavouriteMovies;
+
 public class Main2Activity extends AppCompatActivity implements OnItemClickListener
 {
 
@@ -45,6 +47,7 @@ public class Main2Activity extends AppCompatActivity implements OnItemClickListe
     private Boolean savedState;
     public static final String IMAGE_URL_BASE_PATH = " http://image.tmdb.org/t/p/w154";
     private MovieDatabase mdb;
+    private List<Movie> favouriteMovies = new ArrayList<>();
 
 
     @Override
@@ -57,6 +60,7 @@ public class Main2Activity extends AppCompatActivity implements OnItemClickListe
         mdb = MovieDatabase.getInstance(getApplicationContext());
 //        End of it
 
+         gettingFavouriteMovies();
 
 //        Details of the searched movie
 
@@ -92,6 +96,9 @@ public class Main2Activity extends AppCompatActivity implements OnItemClickListe
         voteAverage = (TextView) findViewById(R.id.textView5);
         releaseDate = (TextView) findViewById(R.id.textView8);
        favourite = (CheckBox) findViewById(R.id.favorite);
+
+
+       checkingWhetherItHasBeenAddedToFavourites();
 
         title.setText(titleText);
         synopsis.setText(sysnopsisTetx);
@@ -131,8 +138,6 @@ public class Main2Activity extends AppCompatActivity implements OnItemClickListe
         {
             favourite.setChecked(savedState);
         }
-
-
 
     }
 
@@ -242,7 +247,8 @@ public class Main2Activity extends AppCompatActivity implements OnItemClickListe
 
 
         //code to check if this checkbox is checked!
-        Thread thread = new Thread(new Runnable() {
+        Thread thread = new Thread(new Runnable()
+        {
             @Override
             public void run()
             {
@@ -288,6 +294,7 @@ public class Main2Activity extends AppCompatActivity implements OnItemClickListe
         }
 
 
+
     }
     public void removeFromFavourites()
     {
@@ -303,4 +310,31 @@ public class Main2Activity extends AppCompatActivity implements OnItemClickListe
 
     }
 
+    public void checkingWhetherItHasBeenAddedToFavourites()
+    {
+
+        Log.d("favouriteSize","This is the size of the favourite movies " + favouriteMovies.size());
+        if(favouriteMovies.size() != 0)
+        {
+           int i=0;
+           while (i<favouriteMovies.size())
+           {
+               Log.d("FavouriteCount","This is the " + i +" movie");
+               Movie compare = favouriteMovies.get(i);
+               int compareId = compare.getId();
+               if(id == compareId)
+               {
+                   favourite.setChecked(true);
+               }
+               i++;
+           }
+        }
+    }
+    public void gettingFavouriteMovies()
+    {
+        Log.d("Checking","The method for checking the favourite list has been called");
+
+        favouriteMovies = returnFavouriteMovies();
+
+    }
 }

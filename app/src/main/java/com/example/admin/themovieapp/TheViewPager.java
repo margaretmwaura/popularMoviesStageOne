@@ -18,6 +18,8 @@ import android.view.WindowManager;
 public class TheViewPager extends AppCompatActivity {
 
     FragmentAdapter  adapter;
+    private int currentPosition;
+    private int previousPosition;
     @Override
     protected void onCreate(Bundle savedInstanceState)
     {
@@ -53,8 +55,12 @@ public class TheViewPager extends AppCompatActivity {
             @Override
             public void onPageSelected(int position)
             {
+                previousPosition = currentPosition;
+               invalidateOptionsMenu(position);
+               currentPosition = position;
 
-                invalidateOptionsMenu(position);
+                   onPageUnselected(previousPosition);
+
             }
             @Override
             public void onPageScrollStateChanged(int state)
@@ -71,9 +77,26 @@ public class TheViewPager extends AppCompatActivity {
         // Give the TabLayout the ViewPager
         tabLayout2.setupWithViewPager(viewPager);
 
-
+//        Removes the actionBar shadow
+         this.getSupportActionBar().setElevation(0);
     }
 
+    private void onPageUnselected(int position)
+    {
+
+//        Have the fragment call a method for clearing the mediaPlayer and the animation
+        if(position == 0)
+        {
+            TheTopRated fragment = new TheTopRated();
+            fragment.clearingAnimations();
+        }
+        if(position == 1)
+        {
+          TheMostPopular fragment = new TheMostPopular();
+          fragment.clearingAnimations();
+        }
+
+    }
     private void invalidateOptionsMenu(int position)
     {
         for(int i = 0; i < adapter.getCount(); i++) {

@@ -1,14 +1,17 @@
 package com.example.admin.themovieapp;
 
 import android.content.Context;
+import android.graphics.Color;
 import android.net.Uri;
 import android.support.v7.widget.RecyclerView;
 import android.util.Log;
+import android.util.SparseBooleanArray;
 import android.view.LayoutInflater;
 import android.view.View;
+import android.widget.AdapterView.OnItemLongClickListener;
 import android.view.ViewGroup;
+import android.widget.AdapterView;
 import android.widget.ImageView;
-
 import com.squareup.picasso.Picasso;
 
 import java.util.ArrayList;
@@ -17,11 +20,12 @@ import java.util.List;
 public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterViewHolder>
 {
 
-    private List<Movie> mMovieList;
+    private static SparseBooleanArray recyclerArrayState = new SparseBooleanArray();
+    private List<Movie> mMovieList,addFavourite;
     private Context mContext;
     public static final String IMAGE_URL_BASE_PATH = " http://image.tmdb.org/t/p/w342";
     private OnItemClickListener cLickListener;
-
+    private OnLongClickListener longCLickListener;
 
 
     public PostersAdapter(Context context)
@@ -30,9 +34,15 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
         this.mMovieList = new ArrayList<>();
 
     }
-    public void setClickListener(OnItemClickListener itemClickListener) {
+    public void setClickListener(OnItemClickListener itemClickListener)
+    {
         this.cLickListener = itemClickListener;
     }
+    public void setLongCLickListener(OnLongClickListener itemClickListener)
+    {
+        this.longCLickListener = itemClickListener;
+    }
+
 
     @Override
     public PosterViewHolder onCreateViewHolder(ViewGroup parent, int viewType)
@@ -84,6 +94,9 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
         });
         builder.build().load(toLoad).fit().into(holder.posterImageView);
 
+//This is to be called during the longClicks if the position changes
+
+        holder.bind(position);
 
     }
 
@@ -100,23 +113,88 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
         notifyDataSetChanged();
     }
 
+    public static void emptying()
+    {
+        recyclerArrayState.clear();
+    }
 
-    class PosterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
+    class PosterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,View.OnLongClickListener
     {
         ImageView posterImageView;
 
-        public PosterViewHolder(View itemView)
-        {
+        public PosterViewHolder(View itemView) {
             super(itemView);
             posterImageView = (ImageView) itemView.findViewById(R.id.posters);
+
+            itemView.setOnLongClickListener(this);
             itemView.setOnClickListener(this);
-        }
+       }
 
         @Override
-        public void onClick(View v)
-        {
+        public void onClick(View v) {
             cLickListener.onClick(v, getAdapterPosition());
         }
+
+
+        @Override
+        public boolean onLongClick(View v)
+        {
+
+//            int previousSelect = selectedPosition;
+//            selectedPosition=getAdapterPosition();
+//
+////          This notify methods are enabling the bindViewHolderMethods to be called once the values change
+//            notifyItemChanged(previousSelect);
+//            notifyItemChanged(selectedPosition);
+//            Checking whether the adapter position exists in the sparsebooleanArray
+
+            longCLickListener.onLongClick(v,getAdapterPosition());
+            if(!recyclerArrayState.get(getAdapterPosition(),false))
+            {
+//                itemView.setBackgroundColor(Color.RED);
+                ImageView posterImageView = (ImageView) itemView.findViewById(R.id.posters);
+                posterImageView.setColorFilter(Color.parseColor("#80FAEBD7"));
+                recyclerArrayState.put(getAdapterPosition(),true);
+                Log.d("ViewHolderLongClick","The viewholder has been longClicked");
+
+
+            }
+            else
+            {
+                itemView.setBackgroundColor(Color.WHITE);
+                ImageView posterImageView = (ImageView) itemView.findViewById(R.id.posters);
+                posterImageView.setColorFilter(Color.TRANSPARENT);
+                recyclerArrayState.put(getAdapterPosition(),false);
+
+            }
+
+//This method is causing a reload hence something ugly
+//            notifyDataSetChanged();
+
+//            Set to true to prevent the onClickLIstener from being fired
+            return true;
+        }
+
+        public void bind(int position)
+        {
+            if(!recyclerArrayState.get(position,false))
+            {
+                itemView.setBackgroundColor(Color.WHITE);
+                ImageView posterImageView = (ImageView) itemView.findViewById(R.id.posters);
+                posterImageView.setColorFilter(Color.TRANSPARENT);
+
+            }
+            else
+            {
+//                itemView.setBackgroundColor(Color.RED);
+                ImageView posterImageView = (ImageView) itemView.findViewById(R.id.posters);
+                posterImageView.setColorFilter(Color.parseColor("#80FAEBD7"));
+
+            }
+        }
+
+
+
     }
 
-}
+    }

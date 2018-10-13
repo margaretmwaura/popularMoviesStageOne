@@ -4,16 +4,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     tools:context=".MainActivity">
     <item
-        android:id="@+id/action_settings"
+        android:id="@+id/search"
         android:orderInCategory="1"
         android:title="search"
         app:actionViewClass="android.support.v7.widget.SearchView"
         android:icon="@drawable/ic_search"
-        app:showAsAction="ifRoom" />
+        app:showAsAction="collapseActionView|always" />
     <item
         android:id="@+id/favorite_movies"
         android:orderInCategory="100"
-        android:title="refresh"
+        android:title="favourite"
+        app:actionLayout="@layout/notification_layout"
         android:icon="@drawable/ic_favorite_black_24dp"
         app:showAsAction="ifRoom" />
 
