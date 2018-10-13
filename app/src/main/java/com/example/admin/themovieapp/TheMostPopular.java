@@ -45,7 +45,7 @@ import static android.content.Context.INPUT_METHOD_SERVICE;
 import static com.example.admin.themovieapp.PostersAdapter.emptying;
 
 
-public class TheMostPopular extends Fragment implements OnItemClickListener,OnLongClickListener {
+public class TheMostPopular extends Fragment implements OnItemClickListener{
     //    This list is the result gotten from the search
     private List<Movie> movies = new ArrayList<>();
     private List<Movie> favouriteMovies = new ArrayList<>();
@@ -57,7 +57,6 @@ public class TheMostPopular extends Fragment implements OnItemClickListener,OnLo
     private Movie favourite;
 
     private TextView notification, errorMessage;
-    private Circle circle;
     private int duration = 2000;
     private Button button;
 
@@ -66,10 +65,9 @@ public class TheMostPopular extends Fragment implements OnItemClickListener,OnLo
     private static Retrofit retrofit = null;
     public static final String BASE_URL = "http://api.themoviedb.org/3/";
     //    private Bundle mListState;
-    private MovieDatabase mDb;
+
     public static final String ARG_PAGE = "ARG_PAGE";
     private SparseBooleanArray positions = new SparseBooleanArray();
-    private CircleAngleAnimation animation;
     private ValueAnimator anim;
     private Animation myanim;
 
@@ -97,13 +95,8 @@ public class TheMostPopular extends Fragment implements OnItemClickListener,OnLo
 //        getActivity().getWindow().setSoftInputMode(
 //                WindowManager.LayoutParams.SOFT_INPUT_STATE_ALWAYS_HIDDEN);
 
-        circle = (Circle) rootView.findViewById(R.id.error);
-        button = (Button) rootView.findViewById(R.id.retry);
-        button.setVisibility(View.INVISIBLE);
-        errorMessage = rootView.findViewById(R.id.errorMessage);
-        errorMessage.setVisibility(View.INVISIBLE);
 
-        mDb = MovieDatabase.getInstance(getActivity().getApplicationContext());
+
 
 //        The reference to the recyclerView
         recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView_most_popular);
@@ -118,7 +111,6 @@ public class TheMostPopular extends Fragment implements OnItemClickListener,OnLo
         postersAdapter = new PostersAdapter(getActivity().getApplicationContext());
         recyclerView.setAdapter(postersAdapter);
         postersAdapter.setClickListener(this);
-        postersAdapter.setLongCLickListener(this);
 
 
         if (savedInstanceState != null) {
@@ -133,16 +125,7 @@ public class TheMostPopular extends Fragment implements OnItemClickListener,OnLo
             postersAdapter.setMovieList(movies);
         }
 
-        button.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                gettingThePopularMovies();
-            }
-        });
 
-        anim = ValueAnimator.ofFloat(30.0f, 10.0f);
-        myanim = AnimationUtils.loadAnimation(getActivity().getApplicationContext(), R.anim.rotate);
-        ring = MediaPlayer.create(getActivity().getApplicationContext(), R.raw.ring);
 
         return rootView;
     }
@@ -169,81 +152,13 @@ public class TheMostPopular extends Fragment implements OnItemClickListener,OnLo
                 movies = response.body().getResults();
                 postersAdapter.setMovieList(movies);
                 Log.d("Sucess", "This was a success");
-                button.setVisibility(View.INVISIBLE);
-                errorMessage.setVisibility(View.INVISIBLE);
-                circle.setVisibility(View.INVISIBLE);
 
             }
 
             @Override
-            public void onFailure(Call<AllMovie> call, Throwable t)
-            {
+            public void onFailure(Call<AllMovie> call, Throwable t) {
                 Log.d(TAG, " This was a huge fail" + t.getMessage());
                 recyclerView.setVisibility(View.INVISIBLE);
-
-
-                circle.setVisibility(View.VISIBLE);
-                animation = new CircleAngleAnimation(circle, 320);
-                animation.setDuration(duration);
-                Animation.AnimationListener animationListener = new Animation.AnimationListener() {
-                    @Override
-                    public void onAnimationStart(Animation animation) {
-
-                    }
-
-                    @Override
-                    public void onAnimationEnd(Animation animation) {
-                        duration = 1;
-
-                        if(anim!=null)
-                        {
-                            anim.addUpdateListener(new ValueAnimator.AnimatorUpdateListener() {
-                                @Override
-                                public void onAnimationUpdate(ValueAnimator animation) {
-                                    circle.getPaint().setStrokeWidth((Float) anim.getAnimatedValue());
-//                                Log.d("Animatlion","Method has been called  " + (Float)anim.getAnimatedValue() );
-                                    circle.invalidate();
-                                    circle.requestLayout();
-                                }
-                            });
-
-                            anim.addListener(new AnimatorListenerAdapter() {
-                                @Override
-                                public void onAnimationEnd(Animator animation) {
-                                    super.onAnimationEnd(animation);
-
-                                    if(myanim!=null)
-                                    {
-                                        circle.startAnimation(myanim);
-                                        button.setVisibility(View.VISIBLE);
-                                        errorMessage.setVisibility(View.VISIBLE);
-                                        Log.d("Myanim animation " , "Method has been called The Most Popular");
-                                    }
-//                                Code for adding the error sound
-
-                                    if(ring!=null)
-                                    {
-
-                                        ring.start();
-                                        Log.d("Media Player animation " , "Method has been called The Most Popular");
-                                    }
-                                }
-                            });
-                            anim.setDuration(1000);
-                            anim.start();
-                        }
-
-                    }
-
-                    @Override
-                    public void onAnimationRepeat(Animation animation) {
-
-                    }
-                };
-                animation.setAnimationListener(animationListener);
-                circle.startAnimation(animation);
-
-
             }
         });
 
@@ -284,72 +199,7 @@ public class TheMostPopular extends Fragment implements OnItemClickListener,OnLo
         Log.d("onCreateOptionsMenu", "Method called");
 
 
-        final List<Movie> movieSearch = new ArrayList<>();
-        MenuItem search_item = menu.findItem(R.id.action_search);
 
-        final SearchView searchView = (SearchView) search_item.getActionView();
-        searchView.setQueryHint("Enter a movie title");
-
-
-        searchView.setQuery("", false);
-//        searchView.setIconified(true);
-//        searchView.setIconified(true);
-
-        searchView.setIconifiedByDefault(true);
-
-        searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
-            @Override
-            public boolean onQueryTextSubmit(String query) {
-//                Clearing the search array
-                String keyword = query.toLowerCase();
-                movieSearch.clear();
-                for (int i = 0; i < movies.size(); i++) {
-                    Log.d("Search", "Search method called ");
-                    Movie movie = movies.get(i);
-                    String title = movie.getTitle();
-                    String search = title.toLowerCase();
-                    if (search.contains(keyword)) {
-                        movieSearch.add(movie);
-                        Log.d("Search", "Search found one");
-                    }
-
-                }
-                postersAdapter.setMovieList(movieSearch);
-                return false;
-            }
-
-            @Override
-            public boolean onQueryTextChange(String newText) {
-                return false;
-            }
-        });
-
-        searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
-            @Override
-            public void onFocusChange(View view, boolean queryTextFocused) {
-                if (!queryTextFocused) {
-                    postersAdapter.setMovieList(movies);
-
-
-                }
-            }
-        });
-
-
-        MenuItem menuItem = menu.findItem(R.id.favorite_movies);
-        View actionView = menuItem.getActionView();
-        notification = (TextView) actionView.findViewById(R.id.notification_message);
-
-        displaySelectedCount();
-
-        actionView.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                addToFavourites();
-                notification.setText(" ");
-                notification.setVisibility(View.INVISIBLE);
-            }
-        });
 
     }
 
@@ -380,112 +230,6 @@ public class TheMostPopular extends Fragment implements OnItemClickListener,OnLo
         return super.onOptionsItemSelected(item);
     }
 
-    @Override
-    public void onLongClick(View view, int position) {
-        Log.d("LongClickMethod", "The method has beeen called");
-        Log.d("LongClickMethodPosition", "This is the position of the clicked item " + position);
-//Will populate the array at this point that will be added to the favourites section
 
-        favourite = movies.get(position);
-        if (!positions.get(position, false)) {
-            favouriteMovies.add(favourite);
-            positions.put(position, true);
-        } else {
-            favouriteMovies.remove(favourite);
-            positions.put(position, false);
-//            This is where one will keep track of what is to be removed from the notification bar
-        }
-
-        displaySelectedCount();
-    }
-
-    public void displaySelectedCount() {
-        //  this is where one will keep track of the count to be shown in the notification bar by adding
-
-        if (notification != null) {
-
-
-            if (favouriteMovies.size() == 0) {
-                notification.setVisibility(View.GONE);
-
-            } else {
-                int count = favouriteMovies.size();
-                notification.setVisibility(View.VISIBLE);
-                notification.setText(String.valueOf(count));
-            }
-        }
-    }
-
-    public void addToFavourites() {
-        if (favouriteMovies.size() == 0) {
-            Toast.makeText(getActivity().getApplicationContext(), "No movies have been selected to add to favourites", Toast.LENGTH_LONG).show();
-        } else {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run() {
-                    mDb.movieDao().insertMovies(favouriteMovies);
-
-                    favouriteMovies.clear();
-
-                }
-            });
-            thread.start();
-            Toast.makeText(getActivity().getApplicationContext(), "Movies have been added to favourites ", Toast.LENGTH_LONG).show();
-        }
-
-
-        emptying();
-        positions.clear();
-        postersAdapter.notifyDataSetChanged();
-
-    }
-
-    public void clearingAnimations() {
-        Log.d("PageUnselected", "The page the Most Popular has been unselected so the animation will stop");
-//        Toast.makeText(getActivity().getApplicationContext(),"The page has been unselected",Toast.LENGTH_LONG).show();
-
-        if(anim!=null)
-        {
-            if (anim.isRunning())
-            {
-                circle.clearAnimation();
-                Log.d("Animation cleared","The animation to thinening the stroke width has been called ");
-            }
-            anim = null;
-            Log.d("Animation data cleared","The animation to thinening the stroke width has been called ");
-        }
-        if(anim == null)
-        {
-            anim = null;
-            Log.d("Animation thickening","Data is already equal to null ");
-        }
-        if(myanim!=null)
-        {
-            if(myanim.hasStarted())
-            {
-                circle.clearAnimation();
-                Log.d("Animation cleared","The animation to rotate the circle has been called");
-            }
-            myanim = null;
-            Log.d("Animation data cleared","The animation to thinening the stroke width has been called ");
-        }
-        if(myanim == null)
-        {
-            myanim = null;
-            Log.d("Animation rotation","Data is already equal to null ");
-        }
-        if(ring!=null)
-        {
-            ring.release();
-            ring=null;
-            Log.d("Clearing MediaPlayer", "Media player has been cleared ");
-        }
-        if(ring == null)
-        {
-            ring=null;
-            Log.d("Clearing MediaPlayer", "Media player is already equal to null ");
-        }
-
-    }
 }
 

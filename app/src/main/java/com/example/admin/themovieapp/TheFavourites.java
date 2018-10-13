@@ -34,7 +34,7 @@ import retrofit2.converter.gson.GsonConverterFactory;
 
 import static com.example.admin.themovieapp.PostersAdapter.emptying;
 
-public class TheFavourites extends Fragment implements OnItemClickListener,OnLongClickListener
+public class TheFavourites extends Fragment implements OnItemClickListener
 {
 
     //    This list is the result gotten from the search
@@ -48,7 +48,6 @@ public class TheFavourites extends Fragment implements OnItemClickListener,OnLon
     private static Retrofit retrofit = null;
     public static final String BASE_URL = "http://api.themoviedb.org/3/";
     //    private Bundle mListState;
-    private MovieDatabase mDb;
     public static final String ARG_PAGE = "ARG_PAGE";
 
     private Movie favourite;
@@ -78,13 +77,12 @@ public class TheFavourites extends Fragment implements OnItemClickListener,OnLon
 
 
 
-        mDb = MovieDatabase.getInstance(getActivity().getApplicationContext());
+
 
 //        The reference to the recyclerView
         recyclerView = (RecyclerView) rootView.findViewById(R.id.recyclerView_the_favourites);
 
-//        This method has been called first so that the movie list can be populated
-        gettingThePopularMovies();
+
 
 //        Wiring up the recyclerView
         gridLayoutManager = new GridLayoutManager(getActivity().getApplicationContext(),2);
@@ -92,7 +90,6 @@ public class TheFavourites extends Fragment implements OnItemClickListener,OnLon
         postersAdapter = new PostersAdapter(getActivity().getApplicationContext());
         recyclerView.setAdapter(postersAdapter);
         postersAdapter.setClickListener( this);
-        postersAdapter.setLongCLickListener(this);
 
         if(savedInstanceState != null) {
             Log.v("---------------->", "restored!");
@@ -109,23 +106,7 @@ public class TheFavourites extends Fragment implements OnItemClickListener,OnLon
         return rootView;
     }
     //    This needs to be wrapped in a background thread
-    public void gettingThePopularMovies()
-    {
-        //      It works outside of the main thread so need for the background thread
-        ViewModel viewModel = ViewModelProviders.of(this).get(ViewModel.class);
-        viewModel.getMovies().observe(this, new Observer<List<Movie>>()
-        {
-            // This method has the priveledge of accessing the ui
-            @Override
-            public void onChanged(@Nullable List<Movie> moviesNew)
-            {
-                movies = moviesNew;
-                postersAdapter.setMovieList( movies);
-                Log.d("The movie size","The size is " + movies.size());
-            }
-        });
 
-    }
 
     @Override
     public void onClick(View view, int position)
@@ -157,79 +138,6 @@ public class TheFavourites extends Fragment implements OnItemClickListener,OnLon
        inflater.inflate(R.menu.favourites, menu);
        super.onCreateOptionsMenu(menu, inflater);
 
-       final List<Movie> movieSearch = new ArrayList<>();
-       MenuItem search_item = menu.findItem(R.id.search);
-
-       final SearchView searchView = (SearchView) search_item.getActionView();
-       searchView.setQueryHint("Enter a movie title");
-
-
-       searchView.setQuery("", false);
-//        searchView.setIconified(true);
-//        searchView.setIconified(true);
-
-       searchView.setIconifiedByDefault(true);
-
-       searchView.setOnQueryTextListener(new SearchView.OnQueryTextListener()
-       {
-           @Override
-           public boolean onQueryTextSubmit(String query)
-           {
-//                Clearing the search array
-               String keyword = query.toLowerCase();
-               movieSearch.clear();
-               for(int i=0 ; i<movies.size() ; i++)
-               {
-                   Log.d("Search","Search method called ");
-                   Movie movie = movies.get(i);
-                   String title = movie.getTitle();
-                   String search = title.toLowerCase();
-                   if(search.contains(keyword))
-                   {
-                       movieSearch.add(movie);
-                       Log.d("Search","Search found one");
-                   }
-
-               }
-               postersAdapter.setMovieList(movieSearch);
-               return false;
-           }
-
-           @Override
-           public boolean onQueryTextChange(String newText) {
-               return false;
-           }
-       });
-
-       searchView.setOnQueryTextFocusChangeListener(new View.OnFocusChangeListener() {
-           @Override
-           public void onFocusChange(View view, boolean queryTextFocused) {
-               if (!queryTextFocused)
-               {
-                   postersAdapter.setMovieList(movies);
-
-
-               }
-           }
-       });
-
-
-       MenuItem menuItem = menu.findItem(R.id.favorite_movies);
-       View actionView = menuItem.getActionView();
-       notification = (TextView) actionView.findViewById(R.id.notification_message);
-
-       displaySelectedCount();
-
-       actionView.setOnClickListener(new View.OnClickListener()
-       {
-           @Override
-           public void onClick(View v)
-           {
-               addToFavourites();
-               notification.setText(" ");
-               notification.setVisibility(View.INVISIBLE);
-           }
-       });
 
 
 
@@ -259,73 +167,8 @@ public class TheFavourites extends Fragment implements OnItemClickListener,OnLon
        return movies;
    }
 
-    @Override
-    public void onLongClick(View view, int position)
-    {
-        Log.d("LongClickMethod","The method has beeen called");
-        Log.d("LongClickMethodPosition","This is the position of the clicked item " + position);
-//Will populate the array at this point that will be added to the favourites section
-
-        favourite = movies.get(position);
-        if(!positions.get(position,false))
-        {
-            favouriteMovies.add(favourite);
-            positions.put(position,true);
-        }
-        else
-        {
-            favouriteMovies.remove(favourite);
-            positions.put(position,false);
-//            This is where one will keep track of what is to be removed from the notification bar
-        }
-
-        displaySelectedCount();
-    }
-    public void displaySelectedCount()
-    {
-        //  this is where one will keep track of the count to be shown in the notification bar by adding
-
-        if (notification != null)
-        {
 
 
-            if (favouriteMovies.size() == 0)
-            {
-                notification.setVisibility(View.GONE);
 
-            } else
-            {
-                int count = favouriteMovies.size();
-                notification.setVisibility(View.VISIBLE);
-                notification.setText(String.valueOf(count));
-            }
-        }
-    }
-
-    public void addToFavourites()
-    {
-        if(favouriteMovies.size() == 0)
-        {
-            Toast.makeText(getActivity().getApplicationContext(),"No movies have been selected to add to favourites",Toast.LENGTH_LONG).show();
-        }
-        else
-        {
-            Thread thread = new Thread(new Runnable() {
-                @Override
-                public void run()
-                {
-                    mDb.movieDao().deleteMovies(favouriteMovies);
-                    favouriteMovies.clear();
-                }
-            });
-            thread.start();
-            Toast.makeText(getActivity().getApplicationContext(), "Movies have been removed from favourites ", Toast.LENGTH_LONG).show();
-        }
-
-        emptying();
-        positions.clear();
-        postersAdapter.notifyDataSetChanged();
-
-    }
 
 }

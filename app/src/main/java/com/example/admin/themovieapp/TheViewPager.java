@@ -59,7 +59,7 @@ public class TheViewPager extends AppCompatActivity {
                invalidateOptionsMenu(position);
                currentPosition = position;
 
-                   onPageUnselected(previousPosition);
+
 
             }
             @Override
@@ -81,22 +81,7 @@ public class TheViewPager extends AppCompatActivity {
          this.getSupportActionBar().setElevation(0);
     }
 
-    private void onPageUnselected(int position)
-    {
 
-//        Have the fragment call a method for clearing the mediaPlayer and the animation
-        if(position == 0)
-        {
-            TheTopRated fragment = new TheTopRated();
-            fragment.clearingAnimations();
-        }
-        if(position == 1)
-        {
-          TheMostPopular fragment = new TheMostPopular();
-          fragment.clearingAnimations();
-        }
-
-    }
     private void invalidateOptionsMenu(int position)
     {
         for(int i = 0; i < adapter.getCount(); i++) {

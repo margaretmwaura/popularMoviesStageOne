@@ -25,7 +25,7 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
     private Context mContext;
     public static final String IMAGE_URL_BASE_PATH = " http://image.tmdb.org/t/p/w342";
     private OnItemClickListener cLickListener;
-    private OnLongClickListener longCLickListener;
+
 
 
     public PostersAdapter(Context context)
@@ -38,10 +38,7 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
     {
         this.cLickListener = itemClickListener;
     }
-    public void setLongCLickListener(OnLongClickListener itemClickListener)
-    {
-        this.longCLickListener = itemClickListener;
-    }
+
 
 
     @Override
@@ -96,7 +93,6 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
 
 //This is to be called during the longClicks if the position changes
 
-        holder.bind(position);
 
     }
 
@@ -118,7 +114,7 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
         recyclerArrayState.clear();
     }
 
-    class PosterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener,View.OnLongClickListener
+    class PosterViewHolder extends RecyclerView.ViewHolder implements View.OnClickListener
     {
         ImageView posterImageView;
 
@@ -126,7 +122,6 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
             super(itemView);
             posterImageView = (ImageView) itemView.findViewById(R.id.posters);
 
-            itemView.setOnLongClickListener(this);
             itemView.setOnClickListener(this);
        }
 
@@ -135,63 +130,6 @@ public class PostersAdapter  extends RecyclerView.Adapter<PostersAdapter.PosterV
             cLickListener.onClick(v, getAdapterPosition());
         }
 
-
-        @Override
-        public boolean onLongClick(View v)
-        {
-
-//            int previousSelect = selectedPosition;
-//            selectedPosition=getAdapterPosition();
-//
-////          This notify methods are enabling the bindViewHolderMethods to be called once the values change
-//            notifyItemChanged(previousSelect);
-//            notifyItemChanged(selectedPosition);
-//            Checking whether the adapter position exists in the sparsebooleanArray
-
-            longCLickListener.onLongClick(v,getAdapterPosition());
-            if(!recyclerArrayState.get(getAdapterPosition(),false))
-            {
-//                itemView.setBackgroundColor(Color.RED);
-                ImageView posterImageView = (ImageView) itemView.findViewById(R.id.posters);
-                posterImageView.setColorFilter(Color.parseColor("#80FAEBD7"));
-                recyclerArrayState.put(getAdapterPosition(),true);
-                Log.d("ViewHolderLongClick","The viewholder has been longClicked");
-
-
-            }
-            else
-            {
-                itemView.setBackgroundColor(Color.WHITE);
-                ImageView posterImageView = (ImageView) itemView.findViewById(R.id.posters);
-                posterImageView.setColorFilter(Color.TRANSPARENT);
-                recyclerArrayState.put(getAdapterPosition(),false);
-
-            }
-
-//This method is causing a reload hence something ugly
-//            notifyDataSetChanged();
-
-//            Set to true to prevent the onClickLIstener from being fired
-            return true;
-        }
-
-        public void bind(int position)
-        {
-            if(!recyclerArrayState.get(position,false))
-            {
-                itemView.setBackgroundColor(Color.WHITE);
-                ImageView posterImageView = (ImageView) itemView.findViewById(R.id.posters);
-                posterImageView.setColorFilter(Color.TRANSPARENT);
-
-            }
-            else
-            {
-//                itemView.setBackgroundColor(Color.RED);
-                ImageView posterImageView = (ImageView) itemView.findViewById(R.id.posters);
-                posterImageView.setColorFilter(Color.parseColor("#80FAEBD7"));
-
-            }
-        }
 
 
 
